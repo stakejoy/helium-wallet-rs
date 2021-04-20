@@ -984,6 +984,7 @@ dependencies = [
  "bs58",
  "byteorder",
  "dialoguer",
+ "futures",
  "geo-types",
  "h3ron",
  "helium-api",
