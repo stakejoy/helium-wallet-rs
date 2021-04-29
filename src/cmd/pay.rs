@@ -14,8 +14,14 @@ use std::str::FromStr;
 /// goes to 8 decimals of precision. The payment is not submitted to
 /// the system unless the '--commit' option is given.
 pub struct Cmd {
-    /// Address and amount of HNT to send in <address>=<amount> format.
-    #[structopt(long = "payee", short = "p", name = "payee=hnt", required = true)]
+    /// Address and amount of HNT to sent in <address>?amount=<amount>?memo=<memo> format.
+    /// Memo parameter is optional and may be ommitted.
+    #[structopt(
+        long = "payee",
+        short = "p",
+        name = "payee?<amount>=hnt?memo=<memo>",
+        required = true
+    )]
     payees: Vec<Payee>,
 
     /// Manually set the nonce to use for the transaction
@@ -46,8 +52,10 @@ impl Cmd {
             .map(|p| Payment {
                 payee: p.address.to_vec(),
                 amount: u64::from(p.amount),
+                memo: p.memo,
             })
             .collect();
+
         let mut txn = BlockchainTxnPaymentV2 {
             fee: 0,
             payments,
@@ -125,18 +133,43 @@ fn print_txn(
 pub struct Payee {
     address: PublicKey,
     amount: Hnt,
+    memo: u64,
 }
 
 impl FromStr for Payee {
     type Err = Box<dyn std::error::Error>;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let pos = s
-            .find('=')
-            .ok_or_else(|| format!("invalid KEY=value: missing `=`  in `{}`", s))?;
-        Ok(Payee {
-            address: s[..pos].parse()?,
-            amount: s[pos + 1..].parse()?,
-        })
+        let mut split = s.split('?');
+
+        if let Some(address) = split.next() {
+            let mut amount = None;
+            let mut memo = 0;
+
+            for segment in split {
+                let pos = segment
+                    .find('=')
+                    .ok_or_else(|| format!("invalid KEY=value: missing `=`  in `{}`", segment))?;
+
+                let key = &segment[..pos];
+                let value = &segment[pos + 1..];
+                match key {
+                    "amount" => amount = Some(value.parse()?),
+                    "memo" => memo = u64::from_b64(value)?,
+                    _ => panic!("Invalid key given"),
+                }
+            }
+            Ok(Payee {
+                address: address.parse()?,
+                amount: if let Some(amount) = amount {
+                    amount
+                } else {
+                    panic!("Pay transaction must set amount")
+                },
+                memo,
+            })
+        } else {
+            panic!("Invalid command syntax. Check --help for more information")
+        }
     }
 }
