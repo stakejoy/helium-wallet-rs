@@ -4,7 +4,7 @@ use crate::{
     result::{anyhow, bail, Result},
     traits::{TxnEnvelope, TxnFee, TxnSign, B64},
 };
-use helium_api::accounts;
+use helium_api::{accounts, models::Hnt};
 
 #[derive(Debug, StructOpt)]
 /// Transfer hotspot as buyer or seller.

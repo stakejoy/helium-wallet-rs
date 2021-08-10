@@ -5,7 +5,7 @@ use crate::{
     result::Result,
     traits::{TxnEnvelope, TxnFee, TxnSign, B64},
 };
-use helium_api::accounts;
+use helium_api::{accounts, models::Hnt};
 use serde_json::json;
 
 #[derive(Debug, StructOpt)]

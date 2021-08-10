@@ -5,7 +5,11 @@ use crate::{
     traits::{StakingMode, TxnFeeConfig, B64},
     wallet::Wallet,
 };
-pub use helium_api::{models::PendingTxnStatus, Client, Hnt, Hst, Usd};
+pub use helium_api::{
+    models::PendingTxnStatus,
+    models::{Hnt, Hst, Usd},
+    Client,
+};
 pub use helium_proto::*;
 pub use serde_json::json;
 

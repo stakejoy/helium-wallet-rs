@@ -3,7 +3,7 @@ use crate::{
     staking,
     traits::{TxnEnvelope, TxnFee, TxnModeStakingFee, TxnSign},
 };
-use helium_api::{hotspots, Dbi};
+use helium_api::{hotspots, models::Dbi};
 
 #[derive(Debug, StructOpt)]
 /// Assert a hotspot location on the blockchain. The original transaction is
