@@ -359,7 +359,7 @@ impl Default for Builder {
     }
 }
 
-fn gen_keypair(
+pub fn gen_keypair(
     tag: KeyTag,
     seed_words: Option<Vec<String>>,
     seed_type: Option<&SeedType>,
