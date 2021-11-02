@@ -69,7 +69,7 @@ impl Basic {
         let new_wallet = Wallet::encrypt(&keypair, password.as_bytes(), Format::Basic(format))?;
         let mut writer = open_output_file(&self.output, !self.force)?;
         new_wallet.write(&mut writer)?;
-        verify::print_result(&new_wallet, true, opts.format)
+        verify::print_result(&wallet, &Ok(keypair), None, opts.format)
     }
 }
 
@@ -90,11 +90,11 @@ impl Sharded {
         let extension = get_file_extension(&self.output);
         for (i, shard) in new_wallet.shards()?.iter().enumerate() {
             let mut filename = self.output.clone();
-            let share_extension = format!("{}.{}", extension, (i + 1).to_string());
+            let share_extension = format!("{}.{}", extension, (i + 1));
             filename.set_extension(share_extension);
             let mut writer = open_output_file(&filename, !self.force)?;
             shard.write(&mut writer)?;
         }
-        verify::print_result(&new_wallet, true, opts.format)
+        verify::print_result(&wallet, &Ok(keypair), None, opts.format)
     }
 }

@@ -1,10 +1,14 @@
-use crate::{result::Result, traits::ReadWrite};
+use crate::{
+    mnemonic::{entropy_to_mnemonic, SeedType},
+    result::Result,
+    traits::ReadWrite,
+};
 use byteorder::ReadBytesExt;
 use std::{convert::TryFrom, io};
 
 pub use helium_crypto::{
     ecc_compact, ed25519, KeyTag, KeyType, Network, PublicKey, Sign, Verify, KEYTYPE_ED25519_STR,
-    NETTYPE_MAIN_STR, PUBLIC_KEY_LENGTH,
+    NETTYPE_MAIN_STR,
 };
 
 #[derive(PartialEq, Debug)]
@@ -41,18 +45,26 @@ impl Keypair {
     pub fn sign(&self, msg: &[u8]) -> Result<Vec<u8>> {
         Ok(self.0.sign(msg)?)
     }
+
+    /// Return the mnemonic phrase that can be used to recreate this Keypair.
+    /// This function is implemented here to avoid passing the secret between
+    /// too many modules.
+    pub fn phrase(&self, seed_type: &SeedType) -> Result<Vec<String>> {
+        let entropy = self.0.secret_to_vec();
+        entropy_to_mnemonic(&entropy, seed_type)
+    }
 }
 
 impl ReadWrite for Keypair {
     fn write(&self, writer: &mut dyn io::Write) -> Result {
         match &self.0 {
             helium_crypto::Keypair::Ed25519(key) => {
-                writer.write_all(&key.to_bytes())?;
-                writer.write_all(&key.public_key.to_bytes())?;
+                writer.write_all(&key.to_vec())?;
+                writer.write_all(&key.public_key.to_vec())?;
             }
             helium_crypto::Keypair::EccCompact(key) => {
-                writer.write_all(&key.to_bytes())?;
-                writer.write_all(&key.public_key.to_bytes())?;
+                writer.write_all(&key.to_vec())?;
+                writer.write_all(&key.public_key.to_vec())?;
             }
         }
         Ok(())
